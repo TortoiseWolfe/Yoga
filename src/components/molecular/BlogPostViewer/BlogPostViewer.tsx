@@ -328,16 +328,17 @@ export default function BlogPostViewer({
         )}
       </header>
 
-      {/* Featured Image - Mobile-first sizing (PRP-017 T038) */}
+      {/* Featured Image - Responsive without cropping */}
       {featuredImageSrc && (
         <figure className="mb-6 sm:mb-8 md:mb-10">
-          <div className="relative h-48 w-full sm:h-64 md:h-80 lg:h-96">
+          <div className="mx-auto w-full max-w-2xl">
             <Image
               src={featuredImageSrc}
               alt={post.metadata?.featuredImageAlt || post.title}
-              fill
-              className="rounded-lg object-cover shadow-lg"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+              width={800}
+              height={600}
+              className="h-auto w-full rounded-lg shadow-lg"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
               priority
             />
           </div>

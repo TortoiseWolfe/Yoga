@@ -14,6 +14,71 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // Global singleton instance (persists across hot reloads in development)
 let supabaseInstance: SupabaseClient<Database> | null = null;
 
+// Flag to track if we're using mock client
+let isMockClient = false;
+
+/**
+ * Check if Supabase is configured
+ */
+export function isSupabaseConfigured(): boolean {
+  return (
+    !isMockClient &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
+/**
+ * Creates a mock Supabase client for development without credentials
+ */
+function createMockClient(): SupabaseClient<Database> {
+  isMockClient = true;
+
+  const mockAuth = {
+    getSession: async () => ({ data: { session: null }, error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
+    signInWithPassword: async () => ({
+      data: { session: null, user: null },
+      error: new Error('Supabase not configured'),
+    }),
+    signUp: async () => ({
+      data: { session: null, user: null },
+      error: new Error('Supabase not configured'),
+    }),
+    signOut: async () => ({ error: null }),
+    refreshSession: async () => ({
+      data: { session: null, user: null },
+      error: null,
+    }),
+    onAuthStateChange: () => ({
+      data: { subscription: { unsubscribe: () => {} } },
+    }),
+  };
+
+  return {
+    auth: mockAuth,
+    from: () => ({
+      select: () => ({
+        data: null,
+        error: null,
+        limit: () => ({ data: null, error: null }),
+      }),
+      insert: () => ({
+        data: null,
+        error: new Error('Supabase not configured'),
+      }),
+      update: () => ({
+        data: null,
+        error: new Error('Supabase not configured'),
+      }),
+      delete: () => ({
+        data: null,
+        error: new Error('Supabase not configured'),
+      }),
+    }),
+  } as unknown as SupabaseClient<Database>;
+}
+
 /**
  * Creates a Supabase client for browser use
  * Uses implicit flow for static sites (no PKCE)
@@ -39,9 +104,11 @@ export function createClient(): SupabaseClient<Database> {
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env file.'
+    // Return a mock client for development without Supabase
+    console.warn(
+      'Missing Supabase environment variables. Running in offline mode.'
     );
+    return createMockClient();
   }
 
   supabaseInstance = createSupabaseClient<Database>(
@@ -78,7 +145,8 @@ export function getSupabase(): SupabaseClient<Database> {
  */
 function getSupabaseInstance() {
   if (typeof window === 'undefined') {
-    throw new Error('Supabase client can only be used in browser context');
+    // Return mock during SSR
+    return {} as SupabaseClient<Database>;
   }
   return createClient();
 }

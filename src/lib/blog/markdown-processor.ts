@@ -361,6 +361,40 @@ export class MarkdownProcessor {
     // Convert horizontal rules
     html = html.replace(/^---$/gm, '<hr />');
 
+    // Convert GFM tables
+    // Match table blocks: header row, separator row (with multiple columns), and data rows
+    const tableRegex =
+      /^(\|[^\n]+\|)\n(\|(?:[-:\s]+\|)+)\n((?:\|[^\n]+\|\n?)+)/gm;
+    html = html.replace(
+      tableRegex,
+      (match, headerRow, separatorRow, bodyRows) => {
+        // Parse header cells
+        const headerCells = headerRow
+          .split('|')
+          .slice(1, -1) // Remove empty first and last elements
+          .map((cell: string) => `<th>${cell.trim()}</th>`)
+          .join('');
+
+        // Parse body rows
+        const bodyRowsArray = bodyRows.trim().split('\n');
+        const bodyHtml = bodyRowsArray
+          .map((row: string) => {
+            const cells = row
+              .split('|')
+              .slice(1, -1) // Remove empty first and last elements
+              .map((cell: string) => `<td>${cell.trim()}</td>`)
+              .join('');
+            return `<tr>${cells}</tr>`;
+          })
+          .join('\n');
+
+        return `<div class="overflow-x-auto"><table class="table table-zebra w-full">
+<thead><tr>${headerCells}</tr></thead>
+<tbody>${bodyHtml}</tbody>
+</table></div>`;
+      }
+    );
+
     // Convert lists (before converting asterisks to emphasis)
     // Ordered lists (numbered)
     html = html.replace(/^\d+\.\s+(.+)$/gm, '<li class="ordered">$1</li>');
@@ -428,6 +462,8 @@ export class MarkdownProcessor {
         trimmed.startsWith('<li') ||
         trimmed.startsWith('<pre') ||
         trimmed.startsWith('<code') ||
+        trimmed.startsWith('<div') ||
+        trimmed.startsWith('<table') ||
         trimmed.includes(CODE_PLACEHOLDER) // Check if it contains placeholder
       ) {
         return trimmed;
