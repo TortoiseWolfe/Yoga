@@ -7,8 +7,9 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('Account Deletion Contract', () => {
+describe.skipIf(!isSupabaseConfigured())('Account Deletion Contract', () => {
   let supabase: ReturnType<typeof createClient>;
   let testUserId: string;
   let testEmail: string;

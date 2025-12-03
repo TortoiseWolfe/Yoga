@@ -7,8 +7,9 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('Supabase Auth OAuth Contract', () => {
+describe.skipIf(!isSupabaseConfigured())('Supabase Auth OAuth Contract', () => {
   let supabase: ReturnType<typeof createClient>;
 
   beforeAll(() => {

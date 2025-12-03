@@ -6,12 +6,13 @@
  */
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { isSupabaseConfigured } from '../setup';
 
 const EDGE_FUNCTION_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/stripe-webhook`
   : 'http://localhost:54321/functions/v1/stripe-webhook';
 
-describe('Stripe Webhook Contract', () => {
+describe.skipIf(!isSupabaseConfigured())('Stripe Webhook Contract', () => {
   describe('Signature Verification', () => {
     it('should reject invalid signature', async () => {
       const payload = JSON.stringify({

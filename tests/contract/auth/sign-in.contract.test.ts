@@ -8,76 +8,80 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
 import { TEST_EMAIL, TEST_PASSWORD } from '../../fixtures/test-user';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('Supabase Auth Sign-In Contract', () => {
-  let supabase: ReturnType<typeof createClient>;
+describe.skipIf(!isSupabaseConfigured())(
+  'Supabase Auth Sign-In Contract',
+  () => {
+    let supabase: ReturnType<typeof createClient>;
 
-  beforeAll(async () => {
-    supabase = createClient();
-  });
-
-  afterEach(async () => {
-    // Clean up session after each test
-    await supabase.auth.signOut();
-  });
-
-  it('should accept valid credentials', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
+    beforeAll(async () => {
+      supabase = createClient();
     });
 
-    expect(error).toBeNull();
-    expect(data.session).toBeDefined();
-    expect(data.user).toBeDefined();
-    expect(data.user?.email).toBe(TEST_EMAIL);
-  });
-
-  it('should return session with access token', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
+    afterEach(async () => {
+      // Clean up session after each test
+      await supabase.auth.signOut();
     });
 
-    expect(error).toBeNull();
-    expect(data.session).toHaveProperty('access_token');
-    expect(data.session).toHaveProperty('refresh_token');
-    expect(data.session).toHaveProperty('expires_in');
-    expect(data.session?.access_token).toMatch(
-      /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/
-    ); // JWT format
-  });
+    it('should accept valid credentials', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+      });
 
-  it('should reject invalid email', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: 'nonexistent@example.com',
-      password: TEST_PASSWORD,
+      expect(error).toBeNull();
+      expect(data.session).toBeDefined();
+      expect(data.user).toBeDefined();
+      expect(data.user?.email).toBe(TEST_EMAIL);
     });
 
-    expect(error).toBeDefined();
-    expect(error?.message).toContain('Invalid');
-    expect(data.session).toBeNull();
-  });
+    it('should return session with access token', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: TEST_EMAIL,
+        password: TEST_PASSWORD,
+      });
 
-  it('should reject invalid password', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: TEST_EMAIL,
-      password: 'WrongPassword123!',
+      expect(error).toBeNull();
+      expect(data.session).toHaveProperty('access_token');
+      expect(data.session).toHaveProperty('refresh_token');
+      expect(data.session).toHaveProperty('expires_in');
+      expect(data.session?.access_token).toMatch(
+        /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/
+      ); // JWT format
     });
 
-    expect(error).toBeDefined();
-    expect(error?.message).toContain('Invalid');
-    expect(data.session).toBeNull();
-  });
+    it('should reject invalid email', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'nonexistent@example.com',
+        password: TEST_PASSWORD,
+      });
 
-  it('should handle case-insensitive email', async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: TEST_EMAIL.toUpperCase(),
-      password: TEST_PASSWORD,
+      expect(error).toBeDefined();
+      expect(error?.message).toContain('Invalid');
+      expect(data.session).toBeNull();
     });
 
-    // Supabase normalizes email to lowercase
-    expect(error).toBeNull();
-    expect(data.user?.email).toBe(TEST_EMAIL.toLowerCase());
-  });
-});
+    it('should reject invalid password', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: TEST_EMAIL,
+        password: 'WrongPassword123!',
+      });
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain('Invalid');
+      expect(data.session).toBeNull();
+    });
+
+    it('should handle case-insensitive email', async () => {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: TEST_EMAIL.toUpperCase(),
+        password: TEST_PASSWORD,
+      });
+
+      // Supabase normalizes email to lowercase
+      expect(error).toBeNull();
+      expect(data.user?.email).toBe(TEST_EMAIL.toLowerCase());
+    });
+  }
+);

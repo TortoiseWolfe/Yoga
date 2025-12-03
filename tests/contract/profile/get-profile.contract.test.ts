@@ -7,8 +7,9 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
 import { TEST_EMAIL, TEST_PASSWORD } from '../../fixtures/test-user';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('User Profile GET Contract', () => {
+describe.skipIf(!isSupabaseConfigured())('User Profile GET Contract', () => {
   let supabase: ReturnType<typeof createClient>;
   let testUserId: string;
 

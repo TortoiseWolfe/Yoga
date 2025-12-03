@@ -55,6 +55,13 @@ function createMockClient(): SupabaseClient<Database> {
     }),
   };
 
+  // Mock channel for realtime subscriptions
+  const mockChannel = {
+    on: () => mockChannel,
+    subscribe: () => mockChannel,
+    unsubscribe: () => Promise.resolve(),
+  };
+
   return {
     auth: mockAuth,
     from: () => ({
@@ -62,6 +69,8 @@ function createMockClient(): SupabaseClient<Database> {
         data: null,
         error: null,
         limit: () => ({ data: null, error: null }),
+        eq: () => ({ data: null, error: null }),
+        single: () => ({ data: null, error: null }),
       }),
       insert: () => ({
         data: null,
@@ -76,6 +85,8 @@ function createMockClient(): SupabaseClient<Database> {
         error: new Error('Supabase not configured'),
       }),
     }),
+    channel: () => mockChannel,
+    removeChannel: () => Promise.resolve(),
   } as unknown as SupabaseClient<Database>;
 }
 

@@ -4,6 +4,27 @@ import { afterEach, vi, expect } from 'vitest';
 import { toHaveNoViolations } from 'jest-axe';
 import 'fake-indexeddb/auto';
 
+/**
+ * Check if Supabase is configured for tests
+ * Tests requiring real Supabase can use: describe.skipIf(!isSupabaseConfigured())
+ */
+export function isSupabaseConfigured(): boolean {
+  return !!(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+}
+
+/**
+ * Check if Supabase admin client is configured (for tests requiring service role)
+ */
+export function isSupabaseAdminConfigured(): boolean {
+  return !!(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+}
+
 // Mock AuthContext with reasonable defaults for component tests
 // Unit tests can override with vi.doUnmock() if needed
 vi.mock('@/contexts/AuthContext', () => ({

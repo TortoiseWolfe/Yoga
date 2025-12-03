@@ -6,12 +6,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { isSupabaseConfigured } from '../setup';
 
 const EDGE_FUNCTION_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-payment-email`
   : 'http://localhost:54321/functions/v1/send-payment-email';
 
-describe('Email Notification Contract', () => {
+describe.skipIf(!isSupabaseConfigured())('Email Notification Contract', () => {
   describe('Authentication', () => {
     it('should reject requests without authorization', async () => {
       const payload = {

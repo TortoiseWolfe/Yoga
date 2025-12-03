@@ -7,8 +7,9 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('Protected Routes Integration', () => {
+describe.skipIf(!isSupabaseConfigured())('Protected Routes Integration', () => {
   let supabase: ReturnType<typeof createClient>;
   const testEmail = `protected-routes-${Date.now()}@example.com`;
   const testPassword = 'ValidPass123!';

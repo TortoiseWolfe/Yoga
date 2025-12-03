@@ -7,8 +7,9 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('OAuth Flow Integration', () => {
+describe.skipIf(!isSupabaseConfigured())('OAuth Flow Integration', () => {
   let supabase: ReturnType<typeof createClient>;
 
   beforeAll(() => {

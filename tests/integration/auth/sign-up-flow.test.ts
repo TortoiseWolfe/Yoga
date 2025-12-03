@@ -9,8 +9,9 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createClient } from '@/lib/supabase/client';
 import { validateEmail } from '@/lib/auth/email-validator';
 import { validatePassword } from '@/lib/auth/password-validator';
+import { isSupabaseConfigured } from '../../setup';
 
-describe('Sign-Up Flow Integration', () => {
+describe.skipIf(!isSupabaseConfigured())('Sign-Up Flow Integration', () => {
   let supabase: ReturnType<typeof createClient>;
   const testUsers: string[] = [];
 
