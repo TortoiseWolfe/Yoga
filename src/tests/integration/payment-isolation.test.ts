@@ -29,6 +29,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 describe.skipIf(!isSupabaseConfigured)(
   'Payment Data Isolation - REQ-SEC-001',
   () => {
+    // These are only used when tests run (i.e., when Supabase is configured)
     let userAClient: ReturnType<typeof createClient<Database>>;
     let userBClient: ReturnType<typeof createClient<Database>>;
     let userAId: string;

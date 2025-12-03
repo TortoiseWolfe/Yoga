@@ -12,28 +12,29 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { ConnectionService } from '@/services/messaging/connection-service';
+import type { Database } from '@/lib/supabase/types';
 import { isSupabaseAdminConfigured } from '../../setup';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-// Service role client for test setup/teardown (bypasses RLS)
-const supabaseAdmin =
-  supabaseUrl && supabaseServiceKey
-    ? createClient(supabaseUrl, supabaseServiceKey)
-    : (null as any);
 
 // Test user IDs (we'll create these users in beforeAll)
 let testUser1Id: string;
 let testUser2Id: string;
 let testUser3Id: string;
 
+// Service role client - initialized in beforeAll when tests actually run
+let supabaseAdmin: SupabaseClient<Database>;
+
 describe.skipIf(!isSupabaseAdminConfigured())(
   'ConnectionService Integration Tests',
   () => {
     beforeAll(async () => {
+      // Create client inside beforeAll - this only runs if tests aren't skipped
+      supabaseAdmin = createClient<Database>(supabaseUrl, supabaseServiceKey);
+
       // Create test users
       const { data: user1 } = await supabaseAdmin.auth.admin.createUser({
         email: 'connection-test-user1@example.com',
@@ -278,7 +279,9 @@ describe.skipIf(!isSupabaseAdminConfigured())(
 
         expect(error).toBeNull();
         expect(data?.length).toBe(2); // User1 has 2 pending connections
-        expect(data?.every((c) => c.status === 'pending')).toBe(true);
+        expect(
+          data?.every((c: { status: string }) => c.status === 'pending')
+        ).toBe(true);
       });
 
       it('should filter connections by status (accepted)', async () => {
