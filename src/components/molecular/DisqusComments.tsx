@@ -42,7 +42,7 @@ export default function DisqusComments({
   // Generate production URL - hardcoded for GitHub Actions compatibility
   const productionUrl = url?.startsWith('http')
     ? url
-    : `https://scripthammer.com/blog/${slug}`;
+    : `https://tortoisewolfe.github.io/Yoga/blog/${slug}`;
 
   // Set up intersection observer for lazy loading
   useEffect(() => {
